@@ -65,7 +65,7 @@
      (term (x_1 expr_1 x_2 expr_2)))
    `(,aa ,aa ,bb ,bb)
    (all-distinct? 'a 'b aa bb))
-  
+
   ;; naively-written substitution
   ;;(should be capture-avoiding, thanks to #:binding-forms)
 
@@ -88,22 +88,22 @@
      (term (substitute (lambda (x) (y (lambda (y) (y y)))) y (lambda (z) (z x))))
      `(lambda (,x) ((lambda (z) (z x)) (lambda (,y) (,y ,y))))
      (all-distinct? x y `x `y)))
-    
+
   (let ()
     (define-language stlc
       (M N ::= (M N) x cons nil)
       (x variable-not-otherwise-mentioned))
-    
+
     (define red
       (reduction-relation
        stlc
        (--> (any_1 any_2 any_3) (substitute any_1 any_2 any_3))))
-    
+
     (check-equal? (apply-reduction-relation
                    red
                    (term ((cons x) x nil)))
                   (list (term (cons nil)))))
-  
+
   ;; == more complex stuff ==
 
   (define-language big-language
@@ -438,7 +438,7 @@
                     (,bbb (+ ,aaa ,b)))
        (+ ,aaa ,bbb ,c)))
    (a b c aa bb aaa bbb 'a 'b 'c))
-  
+
   ;; nested ...bind test
   (define-language lc-nested
     (x ::= variable-not-otherwise-mentioned)
@@ -451,7 +451,7 @@
     [(subst-all e () ()) e]
     [(subst-all e (x x_r ...) (e_x e_r ...))
      (subst-all (substitute e x e_x) (x_r ...) (e_r ...))])
-  
+
   (define lc-->
     (reduction-relation lc-nested
                         (--> ((λ x ..._0 e) e_a ..._0)
@@ -469,6 +469,15 @@
    (list (term (λ x (λ ()))))
    (apply-reduction-relation* lc--> (term (λ x (λ ())))))
 
+  (check-true
+   (redex-match?
+    lc-nested
+    ;; Indentation not vital. but helpful
+          (λ x_0 ... (λ x_2 ... ((λ x_1 ... e) ...)))
+    (term (λ x       (λ         ((λ         ())
+                                 (λ y       ())))))))
+
+
   (define-judgment-form lc
     #:mode (j-subst I I I O)
     #:contract (j-subst expr x expr expr)
@@ -480,7 +489,7 @@
 
     [(j-subst expr_body x expr_new expr_res) ;; note the naive-ness!
      ----------
-     (j-subst (lambda (x_param) expr_body) x expr_new 
+     (j-subst (lambda (x_param) expr_body) x expr_new
               (lambda (x_param) expr_res))]
 
     [----------
@@ -491,12 +500,12 @@
      ----------
      (j-subst x_other x expr_new x_other)])
 
-  (check-match 
+  (check-match
    (judgment-holds (j-subst (x y) x z expr_out) expr_out)
    `((z y)))
 
   (check-match
-   (judgment-holds (j-subst (lambda (x) (y (x (lambda (y) (x (y (lambda (z) (z (y x))))))))) 
+   (judgment-holds (j-subst (lambda (x) (y (x (lambda (y) (x (y (lambda (z) (z (y x)))))))))
                             y (lambda (i) (x i)) expr_out)
                    expr_out)
    `((lambda (,x) ((lambda (,i) (x ,i)) (,x (lambda (,y) (,x (,y (lambda (,z) (,z (,y ,x))))))))))
@@ -504,7 +513,7 @@
 
   ;; Testing for these errors kinda belongs in "syn-err-tests/language-definition.rktd",
   ;; but these errors are returned in terms of `(binding-form #:exports beta)`, which is
-  ;; not quite a subterm of the `define-language` 
+  ;; not quite a subterm of the `define-language`
 
   #;
   (define-language bad-binders
