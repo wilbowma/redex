@@ -498,7 +498,7 @@ to traverse the whole value at once, rather than one binding form at a time.
           `(,@(unsplay (rename-references-spec val ...-bspec σ))
             . ,(loop red-match body-rest σ))]
          ['()
-          `(,(loop red-match body-rest σ))])]
+          (loop red-match body-rest σ)])]
 
       [`(,body-first . ,body-rest)
        `(,(loop red-match body-first σ) . ,(loop red-match body-rest σ))]
