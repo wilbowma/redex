@@ -2552,6 +2552,14 @@
 (struct search-success ())
 (struct search-failure (cutoff?))
 
+;; takes either a reduction relation or an IO judgment-form; returns the language
+(define (reductions-lang reductions)
+  (cond
+    [(runtime-judgment-form? reductions)
+     (runtime-judgment-form-lang reductions)]
+    [else
+     (reduction-relation-lang reductions)]))
+
 ;; traverse-reduction-graph : 
 ;;  reduction-relation term #:goal (-> any boolean?) #:steps number? #:visit (-> any/c void?) -> (or/c search-success? search-failure?)
 ;;  reduction-relation term #:goal #f                #:steps number? #:visit (-> any/c void?) -> (values (listof any/c) boolean?)
@@ -2560,7 +2568,7 @@
                                   #:all? [return-all? #f]
                                   #:cache-all? [cache-all? (or return-all? (current-cache-all?))]
                                   #:stop-when [stop-when (λ (x) #f)])
-  (define lang (reduction-relation-lang reductions))
+  (define lang (reductions-lang reductions))
   (define binding-table (compiled-lang-binding-table lang))
   (define (term-equal? x y) (α-equal? binding-table match-pattern x y))
   (define visited (and (or cache-all? return-all?) (make-α-hash binding-table match-pattern)))
